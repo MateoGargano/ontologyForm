@@ -151,6 +151,7 @@ export interface MedicationRequest {
 import type { Medication } from '../../domain/datatypes/Encounter';
 
 export function toDomain(fhirMedication: MedicationRequest): Medication {
+    console.log('LLEGA???')
     // Extract medication name from codeable concept or reference
     const medicationName = fhirMedication.medicationCodeableConcept?.text || 
                           fhirMedication.medicationCodeableConcept?.coding?.[0]?.display ||

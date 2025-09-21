@@ -1,4 +1,9 @@
 import type { Patient as FHIRPatient } from '../data/datatypes/fhirPatient';
+import type { Encounter } from '../data/datatypes/fhirEncounter';
+import type { Observation } from '../data/datatypes/fhirObservation';
+import type { MedicationRequest } from '../data/datatypes/fhirMedicationRequest';
+import type { Condition } from '../data/datatypes/fhirCondition';
+import type { AllergyIntolerance } from '../data/datatypes/fhirAllergyIntolerance';
 
 const BASE_URL = 'http://localhost:3000';
 
@@ -107,5 +112,176 @@ export class ApiService {
   // Health check
   static async healthCheck(): Promise<ApiResponse<{ status: string }>> {
     return this.request<{ status: string }>('/health');
+  }
+
+  // Get encounters for a patient
+  static async getPatientEncounters(patientId: string): Promise<ApiResponse<Encounter[]>> {
+    const response = await this.request<{
+      success: boolean;
+      data: Encounter[];
+      count: number;
+      message: string;
+    }>(`/encounters/patient/${patientId}`);
+    
+    return {
+      data: response.data.data,
+      status: response.status,
+      message: response.data.message
+    };
+  }
+
+  // Get observations for a patient
+  static async getPatientObservations(patientId: string): Promise<ApiResponse<Observation[]>> {
+    const response = await this.request<{
+      success: boolean;
+      data: Observation[];
+      count: number;
+      message: string;
+    }>(`/observations/patient/${patientId}`);
+    
+    return {
+      data: response.data.data,
+      status: response.status,
+      message: response.data.message
+    };
+  }
+
+  // Get medication requests for a patient
+  static async getPatientMedicationRequests(patientId: string): Promise<ApiResponse<MedicationRequest[]>> {
+    const response = await this.request<{
+      success: boolean;
+      data: MedicationRequest[];
+      count: number;
+      message: string;
+    }>(`/medication-requests/patient/${patientId}`);
+    
+    return {
+      data: response.data.data,
+      status: response.status,
+      message: response.data.message
+    };
+  }
+
+  // Get conditions for a patient
+  static async getPatientConditions(patientId: string): Promise<ApiResponse<Condition[]>> {
+    const response = await this.request<{
+      success: boolean;
+      data: Condition[];
+      count: number;
+      message: string;
+    }>(`/conditions/patient/${patientId}`);
+    
+    return {
+      data: response.data.data,
+      status: response.status,
+      message: response.data.message
+    };
+  }
+
+  // Get allergy intolerances for a patient
+  static async getPatientAllergyIntolerances(patientId: string): Promise<ApiResponse<AllergyIntolerance[]>> {
+    const response = await this.request<{
+      success: boolean;
+      data: AllergyIntolerance[];
+      count: number;
+      message: string;
+    }>(`/allergy-intolerances/patient/${patientId}`);
+    
+    return {
+      data: response.data.data,
+      status: response.status,
+      message: response.data.message
+    };
+  }
+
+  // Encounter endpoints
+  static async createEncounter(encounter: Omit<Encounter, 'id'>): Promise<ApiResponse<Encounter>> {
+    const response = await this.request<{
+      success: boolean;
+      data: Encounter;
+      message: string;
+    }>('/encounters', {
+      method: 'POST',
+      body: JSON.stringify(encounter),
+    });
+    
+    // Extract the actual encounter data from the wrapped response
+    return {
+      data: response.data.data,
+      status: response.status,
+      message: response.data.message
+    };
+  }
+
+  // Observation endpoints
+  static async createObservation(observation: Omit<Observation, 'id'>): Promise<ApiResponse<Observation>> {
+    const response = await this.request<{
+      success: boolean;
+      data: Observation;
+      message: string;
+    }>('/observations', {
+      method: 'POST',
+      body: JSON.stringify(observation),
+    });
+    
+    return {
+      data: response.data.data,
+      status: response.status,
+      message: response.data.message
+    };
+  }
+
+  // Medication Request endpoints
+  static async createMedicationRequest(medicationRequest: Omit<MedicationRequest, 'id'>): Promise<ApiResponse<MedicationRequest>> {
+    const response = await this.request<{
+      success: boolean;
+      data: MedicationRequest;
+      message: string;
+    }>('/medication-requests', {
+      method: 'POST',
+      body: JSON.stringify(medicationRequest),
+    });
+    
+    return {
+      data: response.data.data,
+      status: response.status,
+      message: response.data.message
+    };
+  }
+
+  // Condition endpoints
+  static async createCondition(condition: Omit<Condition, 'id'>): Promise<ApiResponse<Condition>> {
+    const response = await this.request<{
+      success: boolean;
+      data: Condition;
+      message: string;
+    }>('/conditions', {
+      method: 'POST',
+      body: JSON.stringify(condition),
+    });
+    
+    return {
+      data: response.data.data,
+      status: response.status,
+      message: response.data.message
+    };
+  }
+
+  // Allergy Intolerance endpoints
+  static async createAllergyIntolerance(allergyIntolerance: Omit<AllergyIntolerance, 'id'>): Promise<ApiResponse<AllergyIntolerance>> {
+    const response = await this.request<{
+      success: boolean;
+      data: AllergyIntolerance;
+      message: string;
+    }>('/allergy-intolerances', {
+      method: 'POST',
+      body: JSON.stringify(allergyIntolerance),
+    });
+    
+    return {
+      data: response.data.data,
+      status: response.status,
+      message: response.data.message
+    };
   }
 }

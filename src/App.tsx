@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import PatientsView from './presentation/patient/PatientsView'
 import PatientDetailView from './presentation/patient/PatientDetailView'
+import EncounterForm from './presentation/patient/EncounterForm'
 import DoctorsView from './presentation/doctor/DoctorsView'
 import OrganizationsView from './presentation/organization/OrganizationsView'
 import { ApiService } from './services/apiService'
+import type { ClinicalEncounter } from './domain/datatypes/Encounter'
 
 function MainPage() {
   return (
@@ -159,11 +161,16 @@ function PatientDetailPage() {
     weight: patient.weight || '-'
   }
 
+  const handleCreateEncounter = (patientId: string) => {
+    navigate(`/patients/${patientId}/encounter`)
+  }
+
   return (
     <PatientDetailView 
       patient={displayPatient} 
       onBack={handleBack}
       onKillPatient={handleKillPatient}
+      onCreateEncounter={handleCreateEncounter}
     />
   )
 }
@@ -188,6 +195,110 @@ function OrganizationsPage() {
   return <OrganizationsView onBack={handleBack} />
 }
 
+function EncounterFormPage() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const [patient, setPatient] = useState<any>(null) // eslint-disable-line @typescript-eslint/no-explicit-any
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const loadPatient = async () => {
+      if (!id) return
+      
+      try {
+        setLoading(true)
+        const response = await ApiService.getPatientById(id)
+        // La respuesta viene envuelta en { success, data, message }
+        if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+          setPatient(response.data.data)
+        } else {
+          setPatient(response.data)
+        }
+      } catch (err) {
+        setError('Error al cargar el paciente')
+        console.error('Error loading patient:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadPatient()
+  }, [id])
+
+  const handleBack = () => {
+    navigate(`/patients/${id}`)
+  }
+
+  const handleSubmitEncounter = async (encounter: Omit<ClinicalEncounter, 'id'>) => {
+    try {
+      console.log('Creating encounter for patient:', id, encounter)
+      // Here you would typically call an API to create the encounter
+      // For now, we'll just show a success message and go back
+      alert('Encuentro creado exitosamente')
+      navigate(`/patients/${id}`)
+    } catch (error) {
+      console.error('Error creating encounter:', error)
+      alert('Error al crear el encuentro. Inténtalo de nuevo.')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="view-container">
+        <div className="view-header">
+          <h1 className="view-title">Cargando Paciente...</h1>
+          <button className="back-button" onClick={handleBack}>
+            Volver al Detalle
+          </button>
+        </div>
+        <div className="view-content">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Cargando paciente...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !patient) {
+    return (
+      <div className="view-container">
+        <div className="view-header">
+          <h1 className="view-title">Error</h1>
+          <button className="back-button" onClick={handleBack}>
+            Volver al Detalle
+          </button>
+        </div>
+        <div className="view-content">
+          <div className="error-container">
+            <p className="error-message">{error || 'Paciente no encontrado'}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Transformar datos FHIR a formato de display
+  const displayPatient = {
+    id: patient.id || '-',
+    name: patient.name?.[0]?.text || 
+          (patient.name?.[0]?.given && patient.name?.[0]?.family ? 
+            `${patient.name[0].given.join(' ')} ${patient.name[0].family}`.trim() : 
+            'Nombre no disponible'),
+  }
+
+  return (
+    <EncounterForm 
+      patientId={id || ''}
+      patientName={displayPatient.name}
+      onBack={handleBack}
+      onSubmit={handleSubmitEncounter}
+    />
+  )
+}
+
 function App() {
   return (
     <Router>
@@ -196,6 +307,7 @@ function App() {
           <Route path="/" element={<MainPage />} />
           <Route path="/patients" element={<PatientsPage />} />
           <Route path="/patients/:id" element={<PatientDetailPage />} />
+          <Route path="/patients/:id/encounter" element={<EncounterFormPage />} />
           <Route path="/doctors" element={<DoctorsPage />} />
           <Route path="/organizations" element={<OrganizationsPage />} />
         </Routes>
