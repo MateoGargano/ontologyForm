@@ -154,6 +154,10 @@ const EncounterForm: React.FC<EncounterFormProps> = ({ patientId, patientName, o
     value: ''
   });
   
+  // Variables para guardar nombres de elementos seleccionados
+  const [observationNames, setObservationNames] = useState<string[]>([]);
+  const [newObservationName, setNewObservationName] = useState<string>('');
+  
   // Medications
   const [medications, setMedications] = useState<Medication[]>([]);
   const [newMedication, setNewMedication] = useState<Medication>({
@@ -163,6 +167,10 @@ const EncounterForm: React.FC<EncounterFormProps> = ({ patientId, patientName, o
     value: ''
   });
   
+  // Variables para nombres de medicamentos
+  const [medicationNames, setMedicationNames] = useState<string[]>([]);
+  const [newMedicationName, setNewMedicationName] = useState<string>('');
+  
   // Diagnoses
   const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
   const [newDiagnosis, setNewDiagnosis] = useState<Diagnosis>({
@@ -170,6 +178,10 @@ const EncounterForm: React.FC<EncounterFormProps> = ({ patientId, patientName, o
     diagnosisCode: '',
     status: ''
   });
+  
+  // Variables para nombres de diagnósticos
+  const [diagnosisNames, setDiagnosisNames] = useState<string[]>([]);
+  const [newDiagnosisName, setNewDiagnosisName] = useState<string>('');
   
   // Allergies
   const [allergies, setAllergies] = useState<Allergy[]>([]);
@@ -251,8 +263,9 @@ const EncounterForm: React.FC<EncounterFormProps> = ({ patientId, patientName, o
     
     setNewObservation(prev => ({
       ...prev,
-      loincCode: loincCode.code
+      loincCode: loincCode.code // Mantener el código para mostrar
     }));
+    setNewObservationName(loincCode.shortName); // Guardar el nombre para enviar
     setIsSearchingLoinc(false);
     setShowLoincResults(false);
     setLoincSearchResults([]); // Clear results after selection
@@ -344,8 +357,9 @@ const EncounterForm: React.FC<EncounterFormProps> = ({ patientId, patientName, o
     
     setNewMedication(prev => ({
       ...prev,
-      loincCode: snomedCode.code
+      loincCode: snomedCode.code // Mantener el código para mostrar
     }));
+    setNewMedicationName(snomedCode.shortName); // Guardar el nombre para enviar
     setIsSearchingMedication(false);
     setShowMedicationResults(false);
     setMedicationSearchResults([]);
@@ -413,8 +427,9 @@ const EncounterForm: React.FC<EncounterFormProps> = ({ patientId, patientName, o
     
     setNewDiagnosis(prev => ({
       ...prev,
-      diagnosisCode: snomedCode.code
+      diagnosisCode: snomedCode.code // Mantener el código para mostrar
     }));
+    setNewDiagnosisName(snomedCode.shortName); // Guardar el nombre para enviar
     setIsSearchingDiagnosis(false);
     setShowDiagnosisResults(false);
     setDiagnosisSearchResults([]);
@@ -452,7 +467,9 @@ const EncounterForm: React.FC<EncounterFormProps> = ({ patientId, patientName, o
     console.log('addObservation called', newObservation);
     if (newObservation.loincCode && newObservation.method && newObservation.unitOfMeasure && newObservation.value) {
       setObservations([...observations, { ...newObservation }]);
+      setObservationNames([...observationNames, newObservationName]);
       setNewObservation({ loincCode: '', method: '', unitOfMeasure: '', value: '' });
+      setNewObservationName('');
       console.log('Observation added successfully');
     } else {
       console.log('Missing required fields for observation');
@@ -461,6 +478,7 @@ const EncounterForm: React.FC<EncounterFormProps> = ({ patientId, patientName, o
 
   const removeObservation = (index: number) => {
     setObservations(observations.filter((_, i) => i !== index));
+    setObservationNames(observationNames.filter((_, i) => i !== index));
   };
 
   const addMedication = (e?: React.MouseEvent) => {
@@ -471,7 +489,9 @@ const EncounterForm: React.FC<EncounterFormProps> = ({ patientId, patientName, o
     console.log('addMedication called', newMedication);
     if (newMedication.loincCode && newMedication.method && newMedication.unitOfMeasure && newMedication.value) {
       setMedications([...medications, { ...newMedication }]);
+      setMedicationNames([...medicationNames, newMedicationName]);
       setNewMedication({ loincCode: '', method: '', unitOfMeasure: '', value: '' });
+      setNewMedicationName('');
       console.log('Medication added successfully');
     } else {
       console.log('Missing required fields for medication');
@@ -480,6 +500,7 @@ const EncounterForm: React.FC<EncounterFormProps> = ({ patientId, patientName, o
 
   const removeMedication = (index: number) => {
     setMedications(medications.filter((_, i) => i !== index));
+    setMedicationNames(medicationNames.filter((_, i) => i !== index));
   };
 
   const addDiagnosis = (e?: React.MouseEvent) => {
@@ -490,7 +511,9 @@ const EncounterForm: React.FC<EncounterFormProps> = ({ patientId, patientName, o
     console.log('addDiagnosis called', newDiagnosis);
     if (newDiagnosis.description && newDiagnosis.diagnosisCode && newDiagnosis.status) {
       setDiagnoses([...diagnoses, { ...newDiagnosis }]);
+      setDiagnosisNames([...diagnosisNames, newDiagnosisName]);
       setNewDiagnosis({ description: '', diagnosisCode: '', status: '' });
+      setNewDiagnosisName('');
       console.log('Diagnosis added successfully');
     } else {
       console.log('Missing required fields for diagnosis');
@@ -499,6 +522,7 @@ const EncounterForm: React.FC<EncounterFormProps> = ({ patientId, patientName, o
 
   const removeDiagnosis = (index: number) => {
     setDiagnoses(diagnoses.filter((_, i) => i !== index));
+    setDiagnosisNames(diagnosisNames.filter((_, i) => i !== index));
   };
 
   const addAllergy = (e?: React.MouseEvent) => {
@@ -591,18 +615,30 @@ const EncounterForm: React.FC<EncounterFormProps> = ({ patientId, patientName, o
 
       console.log('Encounter created with ID:', encounterId);
 
-      // Create observations
-      const observationPromises = observations.map(obs => 
+      // Create observations with names instead of codes
+      const observationsWithNames = observations.map((obs, index) => ({
+        ...obs,
+        loincCode: observationNames[index] || obs.loincCode // Usar el nombre si está disponible, sino el código
+      }));
+      const observationPromises = observationsWithNames.map(obs => 
         ApiService.createObservation(toFHIRObservation(obs, patientId, encounterId))
       );
 
-      // Create medications
-      const medicationPromises = medications.map(med => 
+      // Create medications with names instead of codes
+      const medicationsWithNames = medications.map((med, index) => ({
+        ...med,
+        loincCode: medicationNames[index] || med.loincCode // Usar el nombre si está disponible, sino el código
+      }));
+      const medicationPromises = medicationsWithNames.map(med => 
         ApiService.createMedicationRequest(toFHIRMedicationRequest(med, patientId, encounterId))
       );
 
-      // Create diagnoses
-      const diagnosisPromises = diagnoses.map(diag => 
+      // Create diagnoses with names instead of codes
+      const diagnosesWithNames = diagnoses.map((diag, index) => ({
+        ...diag,
+        diagnosisCode: diagnosisNames[index] || diag.diagnosisCode // Usar el nombre si está disponible, sino el código
+      }));
+      const diagnosisPromises = diagnosesWithNames.map(diag => 
         ApiService.createCondition(toFHIRCondition(diag, patientId, encounterId))
       );
 
